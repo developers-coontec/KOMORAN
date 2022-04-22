@@ -3,17 +3,41 @@
 //    id 'com.github.kt3k.coveralls' version '2.6.3'
 //}
 
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "https://maven.meback.ai/repository/maven-mixed/"
+            credentials {
+                username "$mavenUser"
+                password "$mavenPassword"
+            }
+        }
+    }
+}
+
 group = 'com.github.shineware'
 
 
 apply plugin: 'maven'
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 
+version = '1.0.1'
 //cobertura.coverageFormats = ['html', 'xml'] // coveralls plugin depends on xml format report
 
 
 repositories {
+    mavenLocal()
+    maven {
+        url "https://maven.meback.ai/repository/maven-mixed/"
+        credentials {
+            username "$mavenUser"
+            password "$mavenPassword"
+        }
+    }
     jcenter()
     maven { url "https://jitpack.io" }
 
@@ -58,4 +82,40 @@ compileTestJava.options.encoding = "UTF-8"
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.10.2'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources"
+        }
+    }
+}
+
+jar {
+    archivesBaseName = "komoran-core"
+}
+
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username "$mavenUser"
+                password "$mavenPassword"
+            }
+//            def releasesRepoUrl = "https://maven.meback.ai/repository/maven-releases/"
+//            def snapshotsRepoUrl = "https://maven.meback.ai/repository/maven-snapshots/"
+//            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            url = "https://maven.meback.ai/repository/maven-mixed/"
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId group
+            artifactId jar.baseName
+            version version
+            from components.java
+        }
+    }
 }

@@ -645,22 +645,11 @@ public class Komoran implements Cloneable {
         this.resources.load(modelPath);
     }
 
-    /**
-     * 형태소 분석 시 사용될 기분석 사전을 로드합니다. </p>
-     * 형태소 분석 진행 전에 로드되어야 합니다. </p>
-     * <pre>
-     *     Komoran komoran = new Komoran(DEFAULT_MODEL.STABLE);
-     *     komoran.setFWDic("user_data/fwd.user");
-     *     KomoranResult komoranResult = komoran.analyze("감기는 자주 걸리는 병이다");
-     * </pre>
-     *
-     * @param filename 기분석 사전 파일 경로
-     */
-    public void setFWDic(String filename) {
+    public void setFWDic(InputStream is) {
         try {
             CorpusParser corpusParser = new CorpusParser();
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8));
+                new InputStreamReader(is, StandardCharsets.UTF_8));
 //            BufferedReader br = new BufferedReader(new FileReader(filename));
             String line;
             this.fwd = new HashMap<>();
@@ -674,11 +663,11 @@ public class Komoran implements Cloneable {
                 List<Pair<String, String>> convertAnswerList = new ArrayList<>();
                 for (Pair<String, String> pair : problemAnswerPair.getAnswerList()) {
                     convertAnswerList.add(
-                            new Pair<>(pair.getFirst(), pair.getSecond()));
+                        new Pair<>(pair.getFirst(), pair.getSecond()));
                 }
 
                 this.fwd.put(this.unitParser.parse(problemAnswerPair.getProblem()),
-                        convertAnswerList);
+                    convertAnswerList);
             }
             br.close();
 
@@ -686,7 +675,59 @@ public class Komoran implements Cloneable {
             e.printStackTrace();
         }
     }
+    /**
+     * 형태소 분석 시 사용될 기분석 사전을 로드합니다. </p>
+     * 형태소 분석 진행 전에 로드되어야 합니다. </p>
+     * <pre>
+     *     Komoran komoran = new Komoran(DEFAULT_MODEL.STABLE);
+     *     komoran.setFWDic("user_data/fwd.user");
+     *     KomoranResult komoranResult = komoran.analyze("감기는 자주 걸리는 병이다");
+     * </pre>
+     *
+     * @param filename 기분석 사전 파일 경로
+     */
+    public void setFWDic(String filename) {
+        try {
+          this.setFWDic(new FileInputStream(filename));
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+    }
 
+    public void setUserDic(InputStream is) {
+      try {
+
+        this.userDic = new Observation();
+        BufferedReader br = new BufferedReader(
+            new InputStreamReader(is, StandardCharsets.UTF_8));
+        String line;
+        while ((line = br.readLine()) != null) {
+          line = line.trim();
+          if (line.length() == 0 || line.charAt(0) == '#') continue;
+          int lastIdx = line.lastIndexOf("\t");
+
+          String morph;
+          String pos;
+          //사용자 사전에 태그가 없는 경우에는 고유 명사로 태깅
+          if (lastIdx == -1) {
+            morph = line.trim();
+            pos = "NNP";
+          } else {
+            morph = line.substring(0, lastIdx);
+            pos = line.substring(lastIdx + 1);
+          }
+          this.userDic.put(morph, pos, this.resources.getTable().getId(pos), 0.0);
+
+        }
+        br.close();
+
+        //init
+        this.userDic.getTrieDictionary().buildFailLink();
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
     /**
      * 형태소 분석 시 사용될 사용자 사전을 로드합니다. </p>
      * 형태소 분석 진행 전에 로드되어야 합니다.
@@ -700,33 +741,7 @@ public class Komoran implements Cloneable {
      */
     public void setUserDic(String userDic) {
         try {
-
-            this.userDic = new Observation();
-            BufferedReader br = new BufferedReader(new FileReader(userDic));
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (line.length() == 0 || line.charAt(0) == '#') continue;
-                int lastIdx = line.lastIndexOf("\t");
-
-                String morph;
-                String pos;
-                //사용자 사전에 태그가 없는 경우에는 고유 명사로 태깅
-                if (lastIdx == -1) {
-                    morph = line.trim();
-                    pos = "NNP";
-                } else {
-                    morph = line.substring(0, lastIdx);
-                    pos = line.substring(lastIdx + 1);
-                }
-                this.userDic.put(morph, pos, this.resources.getTable().getId(pos), 0.0);
-
-            }
-            br.close();
-
-            //init
-            this.userDic.getTrieDictionary().buildFailLink();
-
+            this.setUserDic(new FileInputStream(userDic));
         } catch (Exception e) {
             e.printStackTrace();
         }
