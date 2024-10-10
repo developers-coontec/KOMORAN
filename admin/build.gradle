@@ -6,7 +6,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         maven {
-            url "https://maven.meback.ai/repository/maven-mixed/"
+            url "https://maven.planesg.ai/repository/maven-mixed/"
             credentials {
                 username "$mavenUser"
                 password "$mavenPassword"
@@ -37,7 +37,7 @@ configurations.all {
 repositories {
     mavenLocal()
     maven {
-        url "https://maven.meback.ai/repository/maven-mixed/"
+        url "https://maven.planesg.ai/repository/maven-mixed/"
         credentials {
             username "$mavenUser"
             password "$mavenPassword"
@@ -78,10 +78,10 @@ publishing {
                 username "$mavenUser"
                 password "$mavenPassword"
             }
-//            def releasesRepoUrl = "https://maven.meback.ai/repository/maven-releases/"
-//            def snapshotsRepoUrl = "https://maven.meback.ai/repository/maven-snapshots/"
+//            def releasesRepoUrl = "https://maven.planesg.ai/repository/maven-releases/"
+//            def snapshotsRepoUrl = "https://maven.planesg.ai/repository/maven-snapshots/"
 //            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            url = "https://maven.meback.ai/repository/maven-mixed/"
+            url = "https://maven.planesg.ai/repository/maven-mixed/"
         }
     }
     publications {
